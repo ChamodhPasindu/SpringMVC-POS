@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface ItemRepo extends JpaRepository<Item,String> {
 
-    @Query(value = "select itemId from Item", nativeQuery = true)
+    @Query(value = "select i.id from Item i", nativeQuery = true)
     List<String> findAllIds();
 }

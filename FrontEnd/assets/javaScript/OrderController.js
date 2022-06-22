@@ -1,10 +1,12 @@
+var orderUrl = "http://localhost:8080/Spring/api/v1/order";
+
 generateOrderId();
 loadAllCustomerIds();
 loadAllItemIds();
 getOrderCount();
 loadAllOrderTable();
 
-tempDB=new Array();
+tempDB = [];
 
 //Set current date
 var now = new Date();
@@ -15,31 +17,31 @@ $('#txtOrderDate').val(today);
 
 //START ORDER BTN FUNCTION
 $("#btnAddItem").click(function () {
-    let itemID=$("#cmbItemId").val();
-    let name=$("#txtOrderItemName").val();
-    var price=$("#txtOrderItemPrice").val();
-    var qtyOnHand=$("#txtOrderQtyOnHand").val();
-    var qty=$("#txtOrderQty").val();
-    var itemTotal=price*qty;
+    let itemID = $("#cmbItemId").val();
+    let name = $("#txtOrderItemName").val();
+    var price = $("#txtOrderItemPrice").val();
+    var qtyOnHand = $("#txtOrderQtyOnHand").val();
+    var qty = $("#txtOrderQty").val();
+    var itemTotal = price * qty;
 
     let previousItemTotal = $("#txtTotal").val();
-    var total=(+itemTotal)+(+previousItemTotal);
+    var total = (+itemTotal) + (+previousItemTotal);
 
 
     let item = checkItemExist(itemID);
     if (item) {
-        if ((+item.qty)+(+qty)<=qtyOnHand){
-            item.qty=(+item.qty)+(+qty);
-            item.total=(+item.total)+(+itemTotal);
+        if ((+item.qty) + (+qty) <= qtyOnHand) {
+            item.qty = (+item.qty) + (+qty);
+            item.total = (+item.total) + (+itemTotal);
 
             $("#txtTotal").val(total.toFixed(2));
 
-        }else {
+        } else {
             alert("Numbers of order quantity are exceed the limit");
         }
 
-    }else {
-        if (+qty <=qtyOnHand) {
+    } else {
+        if (+qty <= qtyOnHand) {
             var tempObj = {
                 itemId: itemID,
                 name: name,
@@ -54,7 +56,7 @@ $("#btnAddItem").click(function () {
         }
     }
     loadCart();
-    $("#txtDiscount").prop('disabled',false);
+    $("#txtDiscount").prop('disabled', false);
 
 
 });
@@ -66,14 +68,14 @@ $("#btnPlaceOrder").click(function () {
 
 });
 
-$("#btnDeleteOrder").click(function (){
+$("#btnDeleteOrder").click(function () {
     let res = confirm("Do you really need to delete this order ?");
     if (res) {
         deleteOrder();
     }
 });
 
-$("#btnOrderSearch").click(function (){
+$("#btnOrderSearch").click(function () {
     searchOrder();
 });
 //END ORDER BTN FUNCTION
@@ -82,11 +84,12 @@ $("#btnOrderSearch").click(function (){
 function loadAllCustomerIds() {
     $("#cmbCustomerId").empty();
     $.ajax({
-        url: "http://localhost:8080/artifact07/customer?option=GET_ALL_ID",
+        url: customerUrl + "/getAllIds",
         method: "GET",
         success: function (resp) {
-            for (var customer of resp.data) {
-                let id = `<option>${customer.id}</option>`
+            for (var customerId of resp.data) {
+                console.log(customerId);
+                let id = `<option>${customerId}</option>`
                 $("#cmbCustomerId").append(id);
             }
         }
@@ -98,11 +101,11 @@ function loadAllItemIds() {
     $("#cmbItemId").empty();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/item?option=GET_ALL_ID",
+        url: itemUrl+"/getAllIds",
         method: "GET",
         success: function (resp) {
-            for (var item of resp.data) {
-                let code = `<option>${item.id}</option>`
+            for (var itemId of resp.data) {
+                let code = `<option>${itemId}</option>`
                 $("#cmbItemId").append(code);
             }
         }
@@ -111,12 +114,10 @@ function loadAllItemIds() {
 
 function generateOrderId() {
     $.ajax({
-        url: "http://localhost:8080/artifact07/order?option=GET_ID",
+        url: orderUrl+"/generateId",
         method: "GET",
         success: function (resp) {
-            for (const order of resp.data) {
-                $("#txtOrderId").val(order.id);
-            }
+                $("#txtOrderId").val(resp.data);
         }
     })
 
@@ -125,7 +126,7 @@ function generateOrderId() {
 function loadCart() {
     $("#addItemTable").empty();
 
-    for (var i of tempDB){
+    for (var i of tempDB) {
         let row = `<tr><td>${i.itemId}</td><td>${i.name}</td><td>${i.price}</td><td>${i.qty}</td><td>${i.total.toFixed(2)}</td></tr>`;
         $("#addItemTable").append(row);
     }
@@ -146,20 +147,20 @@ function placeOrder() {
     let total = $("#txtSubTotal").val();
     let discount = $("#txtDiscount").val();
 
-    let orderObj={
-        orderDetail:tempDB,
-        orderId:orderId,
-        custId:cusId,
-        date:date,
-        cost:total,
-        discount:discount
+    let orderObj = {
+        orderDetail: tempDB,
+        orderId: orderId,
+        custId: cusId,
+        date: date,
+        cost: total,
+        discount: discount
     }
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/order" ,
+        url: "http://localhost:8080/artifact07/order",
         method: "POST",
-        contentType:"application/json",
-        data:JSON.stringify(orderObj),
+        contentType: "application/json",
+        data: JSON.stringify(orderObj),
         success: function (res) {
             if (res.status == 200) {
                 alert(res.message);
@@ -181,9 +182,9 @@ function placeOrder() {
 
 function clearAllDetails() {
     $("#txtOrderCustomerName,#txtOrderSalary,#txtOrderAddress,#txtOrderItemName,#txtOrderItemPrice,#txtOrderQtyOnHand,#txtOrderQty,#txtTotal,#txtSubTotal,#txtCash,#txtDiscount,#txtBalance").val("");
-    $("#btnAddItem,#btnPlaceOrder").prop('disabled',true);
-    $("#txtDiscount,#txtCash").prop('disabled',true);
-    tempDB.splice(0,tempDB.length);
+    $("#btnAddItem,#btnPlaceOrder").prop('disabled', true);
+    $("#txtDiscount,#txtCash").prop('disabled', true);
+    tempDB.splice(0, tempDB.length);
     $("#addItemTable").empty()
 }
 
@@ -272,43 +273,44 @@ function getOrderCount() {
         }
     });
 }
+
 //END ORDER CRUD OPERATIONS
 
 
 //START ORDER KEY FUNCTION
 function activeAddItemBtn() {
-    if ($("#txtOrderItemName").val().length!==0 && $("#txtOrderQty").val().length!==0) {
+    if ($("#txtOrderItemName").val().length !== 0 && $("#txtOrderQty").val().length !== 0) {
         $("#btnAddItem").prop('disabled', false);
     }
 }
 
 function activePurchaseBtn() {
-    if ($("#txtOrderCustomerName").val().length!==0 && $("#txtBalance").val().length!==0 && tempDB.length!==0){
+    if ($("#txtOrderCustomerName").val().length !== 0 && $("#txtBalance").val().length !== 0 && tempDB.length !== 0) {
         $("#btnPlaceOrder").prop('disabled', false);
-    }else {
+    } else {
         $("#btnPlaceOrder").prop('disabled', true);
     }
 }
 
-$("#txtOrderQty").keyup(function (){
-    if ($("#txtOrderQty").val() >0){
+$("#txtOrderQty").keyup(function () {
+    if ($("#txtOrderQty").val() > 0) {
         activeAddItemBtn();
-    }else{
+    } else {
         $("#btnAddItem").prop('disabled', true);
     }
 });
 
-$("#txtOrderDate").keyup(function (){
+$("#txtOrderDate").keyup(function () {
     activePurchaseBtn();
 });
 
-$("#txtCash").keyup(function (event){
-    if (event.key=="Enter"){
-        if ($("#txtCash").val().length!==0){
-            var cash=$("#txtCash").val();
-            var subTotal=$("#txtSubTotal").val();
+$("#txtCash").keyup(function (event) {
+    if (event.key == "Enter") {
+        if ($("#txtCash").val().length !== 0) {
+            var cash = $("#txtCash").val();
+            var subTotal = $("#txtSubTotal").val();
 
-            var balance = (+cash)-(+subTotal);
+            var balance = (+cash) - (+subTotal);
             $("#txtBalance").val(balance.toFixed(2));
 
             activePurchaseBtn();
@@ -316,22 +318,22 @@ $("#txtCash").keyup(function (event){
     }
 });
 
-$("#txtDiscount").keyup(function (event){
-    if (event.key=="Enter"){
-        if ($("#txtDiscount").val().length!==0){
-            var total=$("#txtTotal").val();
-            var discount=$("#txtDiscount").val();
+$("#txtDiscount").keyup(function (event) {
+    if (event.key == "Enter") {
+        if ($("#txtDiscount").val().length !== 0) {
+            var total = $("#txtTotal").val();
+            var discount = $("#txtDiscount").val();
 
-            var subTotal=total-(total*(discount/100));
+            var subTotal = total - (total * (discount / 100));
             $("#txtSubTotal").val(subTotal.toFixed(2));
-            $("#txtCash").prop('disabled',false);
+            $("#txtCash").prop('disabled', false);
             $("#btnAddItem").prop('disabled', true);
 
         }
     }
 });
 
-$("#txtBalance").keyup(function (){
+$("#txtBalance").keyup(function () {
     activePurchaseBtn();
 });
 
@@ -339,22 +341,19 @@ $("#cmbCustomerId").click(function () {
     var customerId = $("#cmbCustomerId").val();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/customer?option=SEARCH&cusId="+customerId,
+        url: customerUrl+"/" + customerId,
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                for (const customer of res.data) {
-                    $("#txtOrderCustomerName").val(customer.name);
-                    $("#txtOrderSalary").val(customer.salary.toFixed(2));
-                    $("#txtOrderAddress").val(customer.address);
-                }
+                var c=res.data;
+                    $("#txtOrderCustomerName").val(c.customerId);
+                    $("#txtOrderSalary").val(c.customerSalary.toFixed(2));
+                    $("#txtOrderAddress").val(c.customerAddress);
             }
             activePurchaseBtn();
         },
-        error: function (ob, textStatus, error) {
-            console.log(ob);
-            console.log(textStatus);
-            console.log(error);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
 });
@@ -363,22 +362,19 @@ $("#cmbItemId").click(function () {
     var itemId = $("#cmbItemId").val();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/item?option=SEARCH&itemId="+itemId,
+        url: itemUrl+"/" + itemId,
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                for (const customer of res.data) {
-                    $("#txtOrderItemName").val(customer.name);
-                    $("#txtOrderItemPrice").val(customer.price.toFixed(2));
-                    $("#txtOrderQtyOnHand").val(customer.qty);
-                }
+                var i=res.data;
+                    $("#txtOrderItemName").val(i.itemName);
+                    $("#txtOrderItemPrice").val(i.itemPrice.toFixed(2));
+                    $("#txtOrderQtyOnHand").val(i.itemQty);
             }
             activeAddItemBtn();
         },
-        error: function (ob, textStatus, error) {
-            console.log(ob);
-            console.log(textStatus);
-            console.log(error);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
 });

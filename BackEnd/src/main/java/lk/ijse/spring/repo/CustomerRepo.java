@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CustomerRepo extends JpaRepository<Customer,String> {
 
-    @Query(value = "select custId from Customer", nativeQuery = true)
+    @Query(value = "select c.id from Customer c")
     List<String> findAllIds();
 
 }

@@ -40,7 +40,6 @@ public class ItemController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseUtil saveItem(@ModelAttribute ItemDTO item) {
-        System.out.println(item.toString());
         itemService.saveItem(item);
         return new ResponseUtil(200, "Save", null);
     }
