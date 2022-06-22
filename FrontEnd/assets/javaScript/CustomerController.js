@@ -1,3 +1,5 @@
+var customerUrl = "http://localhost:8080/Spring/api/v1/customer";
+
 loadAllCustomer();
 getCustomerCount();
 
@@ -209,28 +211,25 @@ $("#btnCustomerUpdate").click(function () {
 
 //START CUSTOMER CRUD OPERATIONS
 
+
 function saveCustomer() {
 
     var serialize = $("#customerForm").serialize();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/customer",
+        url: customerUrl,
         method: "POST",
         data: serialize,
         success: function (res) {
             if (res.status == 200) {
-                alert(res.message);
+                alert("Customer Added Successfully");
                 loadAllCustomer();
                 loadAllCustomerIds();
                 getCustomerCount();
-            } else {
-                alert(res.message);
             }
         },
-        error: function (ob, textStatus, error) {
-            console.log(ob);
-            console.log(textStatus);
-            console.log(error);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     })
 }
@@ -239,14 +238,14 @@ function deleteCustomer() {
     let customerId = $("#customerId").val();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/customer?CusId=" + customerId,
+        url: customerUrl + "/" + customerId,
         method: "DELETE",
         success: function (res) {
-            alert(res.message);
+            alert("Customer Deleted Successfully");
             loadAllCustomer();
             getCustomerCount();
         },
-        error: function (ob, errorStus) {
+        error: function (ob) {
             console.log(ob);
         }
     });
@@ -254,26 +253,24 @@ function deleteCustomer() {
 
 function updateCustomer() {
     let formData = {
-        id: $("#customerId").val(),
-        name: $("#customerName").val(),
-        salary: $("#customerSalary").val(),
-        address: $("#customerAddress").val()
+        customerId: $("#customerId").val(),
+        customerName: $("#customerName").val(),
+        customerSalary: $("#customerSalary").val(),
+        customerAddress: $("#customerAddress").val()
     }
     $.ajax({
-        url: "http://localhost:8080/artifact07/customer",
+        url: customerUrl,
         method: "PUT",
         contentType: "application/json",
         data: JSON.stringify(formData),
         success: function (res) {
             if (res.status == 200) {
-                alert(res.message);
+                alert("Update Customer Successfully");
                 loadAllCustomer();
-            } else {
-                alert(res.message);
             }
         },
-        error: function (ob, errorStus) {
-            console.log(ob);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
     clearAll();
@@ -283,27 +280,24 @@ function updateCustomer() {
 function searchCustomer() {
     let customerId = $("#txtCustomerSearch").val();
     $.ajax({
-        url: "http://localhost:8080/artifact07/customer?option=SEARCH&cusId=" + customerId,
+        url: customerUrl + "/" + customerId,
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                for (const customer of res.data) {
-                    $("#customerId").val(customer.id);
-                    $("#customerName").val(customer.name);
-                    $("#customerSalary").val(customer.salary.toFixed(2));
-                    $("#customerAddress").val(customer.address);
-                }
+                var c = res.data;
+                $("#customerId").val(c.customerId);
+                $("#customerName").val(c.customerName);
+                $("#customerSalary").val(c.customerSalary.toFixed(2));
+                $("#customerAddress").val(c.customerAddress);
                 $('#customerName,#customerSalary,#customerAddress').prop('disabled', false);
                 $("#btnCustomerDelete").prop('disabled', false);
             } else {
-                alert(res.message);
                 clearAll();
             }
         },
-        error: function (ob, textStatus, error) {
-            console.log(ob);
-            console.log(textStatus);
-            console.log(error);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
+            clearAll();
         }
     });
 }
@@ -316,8 +310,9 @@ function clearAll() {
     $('#customerId,#customerName,#customerAddress,#customerSalary').css('border', '2px solid #ced4da');
 
     $('#txtCusId').focus();
+    http://localhost:8080/Spring/api/v1/customer
 
-    $('#btnCustomerSave,#btnCustomerUpdate,#btnCustomerDelete').prop('disabled', true);
+        $('#btnCustomerSave,#btnCustomerUpdate,#btnCustomerDelete').prop('disabled', true);
     $('#customerName,#customerSalary,#customerAddress').prop('disabled', true);
 
 }
@@ -326,11 +321,11 @@ function loadAllCustomer() {
     $("#customerTable").empty();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/customer?option=GET_ALL_DETAILS",
+        url: customerUrl + "/getAll",
         method: "GET",
         success: function (resp) {
             for (const customer of resp.data) {
-                let row = `<tr><td>${customer.id}</td><td>${customer.name}</td><td>${customer.salary.toFixed(2)}</td><td>${customer.address}</td></tr>`;
+                let row = `<tr><td>${customer.customerId}</td><td>${customer.customerName}</td><td>${customer.customerAddress}</td><td>${customer.customerSalary.toFixed(2)}</td></tr>`;
                 $("#customerTable").append(row);
             }
         }
@@ -339,19 +334,15 @@ function loadAllCustomer() {
 
 function getCustomerCount() {
     $.ajax({
-        url: "http://localhost:8080/artifact07/customer?option=COUNT",
+        url: customerUrl + "/count",
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                for (const customer of res.data) {
-                    $("#txtCustomerCount").text(customer.count);
-                }
+                $("#txtCustomerCount").text(res.data);
             }
         },
-        error: function (ob, textStatus, error) {
+        error: function (ob) {
             console.log(ob);
-            console.log(textStatus);
-            console.log(error);
         }
     });
 }

@@ -1,3 +1,5 @@
+var itemUrl = "http://localhost:8080/Spring/api/v1/item";
+
 loadAllItem();
 getItemCount();
 //START ITEM VALIDATION
@@ -190,7 +192,7 @@ $("#btnItemSave").click(function () {
 });
 
 $("#btnItemSearch").click(function () {
-        searchItem();
+    searchItem();
 });
 
 $("#btnItemUpdate").click(function () {
@@ -211,23 +213,19 @@ function saveItem() {
     var serialize = $("#itemForm").serialize();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/item",
+        url: itemUrl,
         method: "POST",
         data: serialize,
         success: function (res) {
             if (res.status == 200) {
-                alert(res.message);
+                alert("Item Save Successfully");
                 loadAllItem();
                 loadAllItemIds();
                 getItemCount();
-            } else {
-                alert(res.message);
             }
         },
-        error: function (ob, textStatus, error) {
-            console.log(ob);
-            console.log(textStatus);
-            console.log(error);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     })
 
@@ -251,11 +249,11 @@ function loadAllItem() {
     $("#itemTable").empty();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/item?option=GET_ALL_DETAILS",
+        url: itemUrl + "/getAll",
         method: "GET",
         success: function (resp) {
             for (const item of resp.data) {
-                let row = `<tr><td>${item.id}</td><td>${item.name}</td><td>${item.qty}</td><td>${item.price.toFixed(2)}</td></tr>`;
+                let row = `<tr><td>${item.itemId}</td><td>${item.itemName}</td><td>${item.itemQty}</td><td>${item.itemPrice.toFixed(2)}</td></tr>`;
                 $("#itemTable").append(row);
             }
         }
@@ -265,54 +263,46 @@ function loadAllItem() {
 function searchItem() {
     let itemId = $("#txtItemSearch").val();
     $.ajax({
-        url: "http://localhost:8080/artifact07/item?option=SEARCH&itemId="+itemId,
+        url: itemUrl + "/" + itemId,
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                for (const item of res.data) {
-                    $("#itemId").val(item.id);
-                    $("#itemName").val(item.name);
-                    $("#itemPrice").val(item.price.toFixed(2));
-                    $("#itemQtyOnHand").val(item.qty);
-                }
+                var i = res.data;
+                $("#itemId").val(i.itemId);
+                $("#itemName").val(i.itemName);
+                $("#itemPrice").val(i.itemPrice.toFixed(2));
+                $("#itemQtyOnHand").val(i.itemQty);
                 $('#itemName,#itemPrice,#itemQtyOnHand').prop('disabled', false);
                 $("#btnItemDelete").prop('disabled', false);
-            } else {
-                alert(res.message);
-                clearAllItemDetails();
             }
         },
-        error: function (ob, textStatus, error) {
-            console.log(ob);
-            console.log(textStatus);
-            console.log(error);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
 }
 
 function updateItem() {
     let formData = {
-        id:$("#itemId").val() ,
-        name:$("#itemName").val() ,
-        price:$("#itemPrice").val() ,
-        qty:$("#itemQtyOnHand").val()
+        itemId: $("#itemId").val(),
+        itemName: $("#itemName").val(),
+        itemPrice: $("#itemPrice").val(),
+        itemQty: $("#itemQtyOnHand").val()
     }
     $.ajax({
-        url: "http://localhost:8080/artifact07/item" ,
+        url: itemUrl,
         method: "PUT",
-        contentType:"application/json",
-        data:JSON.stringify(formData),
+        contentType: "application/json",
+        data: JSON.stringify(formData),
         success: function (res) {
             if (res.status == 200) {
-                alert(res.message);
+                alert("Item Updated Successfully");
                 loadAllItem();
                 clearAllItemDetails();
-            } else {
-                alert(res.message);
             }
         },
-        error: function (ob, errorStus) {
-            console.log(ob);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
 }
@@ -321,14 +311,14 @@ function deleteItem() {
     let itemId = $("#itemId").val();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/item?itemId=" + itemId,
+        url: itemUrl + "/" + itemId,
         method: "DELETE",
         success: function (res) {
-            alert(res.message);
+            alert("Item Deleted Successfully");
             loadAllItem();
             getItemCount()
         },
-        error: function (ob, errorStus) {
+        error: function (ob) {
             console.log(ob);
         }
     });
@@ -337,13 +327,11 @@ function deleteItem() {
 
 function getItemCount() {
     $.ajax({
-        url: "http://localhost:8080/artifact07/item?option=COUNT",
+        url: itemUrl + "/count",
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                for (const item of res.data) {
-                    $("#txtItemCount").text(item.count);
-                }
+                $("#txtItemCount").text(res.data);
             }
         },
         error: function (ob, textStatus, error) {

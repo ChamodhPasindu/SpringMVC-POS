@@ -35,7 +35,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void saveCustomer(CustomerDTO dto) {
-        if (!repo.existsById(dto.getId())) {
+        if (!repo.existsById(dto.getCustomerId())) {
             repo.save(mapper.map(dto, Customer.class));
         } else {
             throw new RuntimeException("Customer Already Added..!");
@@ -44,7 +44,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void updateCustomer(CustomerDTO dto) {
-        if (repo.existsById(dto.getId())) {
+        if (repo.existsById(dto.getCustomerId())) {
             repo.save(mapper.map(dto, Customer.class));
         } else {
             throw new RuntimeException("No Such Customer To Update..! Please Check the ID..!");

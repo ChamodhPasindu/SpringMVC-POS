@@ -10,9 +10,9 @@ import lombok.ToString;
 @Data
 @ToString
 public class CustomerDTO {
-    private String id;
-    private String name;
-    private String address;
-    private double salary;
+    private String customerId;
+    private String customerName;
+    private String customerAddress;
+    private double customerSalary;
 
 }

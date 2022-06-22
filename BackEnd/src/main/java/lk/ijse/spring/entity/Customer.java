@@ -15,9 +15,9 @@ import javax.persistence.Id;
 @ToString
 public class Customer {
     @Id
-    private String custId;
-    private String custName;
-    private double CustSalary;
+    private String id;
+    private String name;
+    private double salary;
     private String address;
 
 }

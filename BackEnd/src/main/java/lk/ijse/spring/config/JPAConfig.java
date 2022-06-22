@@ -19,8 +19,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "lk.ijse.spring.repo")
+@EnableTransactionManagement
 @PropertySource("classpath:application.properties")
 public class JPAConfig {
 
@@ -28,7 +28,7 @@ public class JPAConfig {
     Environment env;
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactoryBean(DataSource dataSource, JpaVendorAdapter va){
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, JpaVendorAdapter va){
         LocalContainerEntityManagerFactoryBean bean=new LocalContainerEntityManagerFactoryBean();
         bean.setJpaVendorAdapter(va);
         bean.setDataSource(dataSource);

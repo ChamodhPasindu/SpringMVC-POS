@@ -12,12 +12,11 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @Data
 @Entity
-@ToString
 public class Item {
     @Id
-    private String itemId;
-    private String itemName;
-    private double unitPrice;
+    private String id;
+    private String name;
+    private double Price;
     private int qty;
 
 }

@@ -10,9 +10,9 @@ import lombok.ToString;
 @Data
 @ToString
 public class ItemDTO {
-    private String id;
-    private String name;
-    private double price;
-    private int qty;
+    private String itemId;
+    private String itemName;
+    private double itemPrice;
+    private int itemQty;
 
 }

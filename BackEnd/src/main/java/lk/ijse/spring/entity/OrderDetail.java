@@ -17,7 +17,7 @@ public class OrderDetail {
     @Id
     private String orderId;
     @Id
-    private String itemId;
+    private String itemCode;
     private int qty;
     private double price;
 
@@ -26,6 +26,6 @@ public class OrderDetail {
     private Orders orders;
 
     @ManyToOne
-    @JoinColumn(name = "itemId",referencedColumnName = "itemId",insertable = false,updatable = false)
+    @JoinColumn(name = "itemCode",referencedColumnName = "id",insertable = false,updatable = false)
     private Item items;
 }
