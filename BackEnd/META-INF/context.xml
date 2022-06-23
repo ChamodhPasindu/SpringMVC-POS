@@ -4,9 +4,9 @@
             name="jdbc/pool"
             type="javax.sql.DataSource"
             driverClassName="com.mysql.jdbc.Driver"
-            url="jdbc:mysql://localhost:3306/springOne?createDatabaseIfNotExist=true"
+            url="jdbc:mysql://localhost:3306/SpringMarket?createDatabaseIfNotExist=true"
             username="root"
-            password="sanu"
+            password="root1234"
             maxTotal="2"
             initialSize="2">
     </Resource>
