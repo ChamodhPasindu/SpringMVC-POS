@@ -292,6 +292,7 @@ function searchCustomer() {
                 $('#customerName,#customerSalary,#customerAddress').prop('disabled', false);
                 $("#btnCustomerDelete").prop('disabled', false);
             } else {
+                alert("No Customer For"+customerId);
                 clearAll();
             }
         },

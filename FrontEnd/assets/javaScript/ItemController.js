@@ -274,6 +274,9 @@ function searchItem() {
                 $("#itemQtyOnHand").val(i.itemQty);
                 $('#itemName,#itemPrice,#itemQtyOnHand').prop('disabled', false);
                 $("#btnItemDelete").prop('disabled', false);
+            }else {
+                alert("No Item For "+itemId);
+                clearAllItemDetails();
             }
         },
         error: function (ob) {

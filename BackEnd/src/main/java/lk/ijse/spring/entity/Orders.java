@@ -25,6 +25,6 @@ public class Orders {
     private Customer customer;
 
     @OneToMany(mappedBy = "orders",cascade = CascadeType.ALL)
-    private List<OrderDetail> orderDetails;
+    private List<OrderDetail> orderDetail;
 
 }

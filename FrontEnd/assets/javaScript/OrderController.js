@@ -1,4 +1,5 @@
 var orderUrl = "http://localhost:8080/Spring/api/v1/order";
+var customer;
 
 generateOrderId();
 loadAllCustomerIds();
@@ -88,7 +89,6 @@ function loadAllCustomerIds() {
         method: "GET",
         success: function (resp) {
             for (var customerId of resp.data) {
-                console.log(customerId);
                 let id = `<option>${customerId}</option>`
                 $("#cmbCustomerId").append(id);
             }
@@ -101,7 +101,7 @@ function loadAllItemIds() {
     $("#cmbItemId").empty();
 
     $.ajax({
-        url: itemUrl+"/getAllIds",
+        url: itemUrl + "/getAllIds",
         method: "GET",
         success: function (resp) {
             for (var itemId of resp.data) {
@@ -114,10 +114,10 @@ function loadAllItemIds() {
 
 function generateOrderId() {
     $.ajax({
-        url: orderUrl+"/generateId",
+        url: orderUrl + "/generateId",
         method: "GET",
         success: function (resp) {
-                $("#txtOrderId").val(resp.data);
+            $("#txtOrderId").val(resp.data);
         }
     })
 
@@ -147,33 +147,43 @@ function placeOrder() {
     let total = $("#txtSubTotal").val();
     let discount = $("#txtDiscount").val();
 
+    cart = [];
+    for (var obj of tempDB) {
+        var cartObj = {
+            orderId: orderId,
+            itemCode: obj.itemId,
+            qty: obj.qty,
+            price: obj.price
+        }
+        cart.push(cartObj);
+    }
+
+
     let orderObj = {
-        orderDetail: tempDB,
         orderId: orderId,
-        custId: cusId,
         date: date,
+        customer: customer,
         cost: total,
-        discount: discount
+        discount: discount,
+        orderDetail: cart
     }
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/order",
+        url: orderUrl,
         method: "POST",
         contentType: "application/json",
         data: JSON.stringify(orderObj),
         success: function (res) {
             if (res.status == 200) {
-                alert(res.message);
+                alert("Order Placed Successfully");
                 generateOrderId();
                 getOrderCount();
                 loadAllOrderTable();
                 loadAllItem();
-            } else {
-                alert(res.message);
             }
         },
-        error: function (ob, errorStus) {
-            console.log(ob);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
 
@@ -192,11 +202,11 @@ function loadAllOrderTable() {
     $("#allOrderTable").empty();
 
     $.ajax({
-        url: "http://localhost:8080/artifact07/order?option=GET_ALL_DETAILS",
+        url: orderUrl + "/getAll",
         method: "GET",
         success: function (resp) {
             for (const order of resp.data) {
-                let row = `<tr><td>${order.id}</td><td>${order.date}</td><td>${order.name}</td><td>${order.discount}</td><td>${order.cost.toFixed(2)}</td></tr>`;
+                let row = `<tr><td>${order.orderId}</td><td>${order.date}</td><td>${order.customer.customerId}</td><td>${order.discount}</td><td>${order.cost.toFixed(2)}</td></tr>`;
                 $("#allOrderTable").append(row);
             }
         }
@@ -206,27 +216,24 @@ function loadAllOrderTable() {
 function searchOrder() {
     var searchID = $("#txtOrderSearch").val();
     $.ajax({
-        url: "http://localhost:8080/artifact07/order?option=SEARCH&orderId=" + searchID,
+        url: orderUrl + "/" + searchID,
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                for (const order of res.data) {
-                    $("#homeOrderId").val(order.id);
-                    $("#homeOrderDate").val(order.date);
-                    $("#homeDiscount").val(order.discount);
-                    $("#homeCost").val(order.cost.toFixed(2));
-                    $("#homeCustomerName").val(order.name);
-                }
+                var o = res.data;
+                $("#homeOrderId").val(o.orderId);
+                $("#homeOrderDate").val(o.date);
+                $("#homeDiscount").val(o.discount);
+                $("#homeCost").val(o.cost.toFixed(2));
+                $("#homeCustomerName").val(o.customer.customerId);
                 $("#btnDeleteOrder").prop('disabled', false);
             } else {
-                alert(res.message);
+                alert("No Order For"+searchID);
                 clearAllOrderDetails();
             }
         },
-        error: function (ob, textStatus, error) {
-            console.log(ob);
-            console.log(textStatus);
-            console.log(error);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
 }
@@ -241,35 +248,31 @@ function deleteOrder() {
 
     var orderId = $("#homeOrderId").val();
     $.ajax({
-        url: "http://localhost:8080/artifact07/order?orderId=" + orderId,
+        url: orderUrl + "/" + orderId,
         method: "DELETE",
         success: function (res) {
-            alert(res.message);
+            alert("Order Deleted Successfully");
             loadAllOrderTable();
             clearAllOrderDetails();
             getOrderCount();
         },
-        error: function (ob, errorStus) {
-            console.log(ob);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
 }
 
 function getOrderCount() {
     $.ajax({
-        url: "http://localhost:8080/artifact07/order?option=COUNT",
+        url: orderUrl + "/count",
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                for (const order of res.data) {
-                    $("#txtOrderCount").text(order.count);
-                }
+                $("#txtOrderCount").text(res.data);
             }
         },
-        error: function (ob, textStatus, error) {
-            console.log(ob);
-            console.log(textStatus);
-            console.log(error);
+        error: function (ob) {
+            console.log(ob.responseJSON.message);
         }
     });
 }
@@ -341,14 +344,14 @@ $("#cmbCustomerId").click(function () {
     var customerId = $("#cmbCustomerId").val();
 
     $.ajax({
-        url: customerUrl+"/" + customerId,
+        url: customerUrl + "/" + customerId,
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                var c=res.data;
-                    $("#txtOrderCustomerName").val(c.customerId);
-                    $("#txtOrderSalary").val(c.customerSalary.toFixed(2));
-                    $("#txtOrderAddress").val(c.customerAddress);
+                customer = res.data;
+                $("#txtOrderCustomerName").val(customer.customerName);
+                $("#txtOrderSalary").val(customer.customerSalary.toFixed(2));
+                $("#txtOrderAddress").val(customer.customerAddress);
             }
             activePurchaseBtn();
         },
@@ -362,14 +365,14 @@ $("#cmbItemId").click(function () {
     var itemId = $("#cmbItemId").val();
 
     $.ajax({
-        url: itemUrl+"/" + itemId,
+        url: itemUrl + "/" + itemId,
         method: "GET",
         success: function (res) {
             if (res.status == 200) {
-                var i=res.data;
-                    $("#txtOrderItemName").val(i.itemName);
-                    $("#txtOrderItemPrice").val(i.itemPrice.toFixed(2));
-                    $("#txtOrderQtyOnHand").val(i.itemQty);
+                var i = res.data;
+                $("#txtOrderItemName").val(i.itemName);
+                $("#txtOrderItemPrice").val(i.itemPrice.toFixed(2));
+                $("#txtOrderQtyOnHand").val(i.itemQty);
             }
             activeAddItemBtn();
         },
