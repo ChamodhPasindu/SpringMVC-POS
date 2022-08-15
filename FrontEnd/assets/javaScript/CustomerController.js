@@ -258,6 +258,8 @@ function updateCustomer() {
         customerSalary: $("#customerSalary").val(),
         customerAddress: $("#customerAddress").val()
     }
+
+
     $.ajax({
         url: customerUrl,
         method: "PUT",
